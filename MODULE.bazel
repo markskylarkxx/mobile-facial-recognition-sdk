@@ -1,0 +1,36 @@
+module(
+    name = "facial_recognition_sdk",
+    version = "0.1.0",
+)
+
+# Bazel dependencies
+bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "rules_python", version = "1.4.1")
+bazel_dep(name = "platforms", version = "0.0.11")
+
+# External modules
+bazel_dep(name = "com_google_absl", version = "20200923.2")
+bazel_dep(name = "org_opencv", version = "4.12.0")
+bazel_dep(name = "protobuf", version = "32.0")
+bazel_dep(name = "mediapipe", version = "0.10.0")  # dummy dep to satisfy Bzlmod
+
+# Local path overrides
+local_path_override(
+    module_name = "com_google_absl",
+    path = "third_party/abseil-cpp",
+)
+
+local_path_override(
+    module_name = "org_opencv",
+    path = "third_party/opencv",
+)
+
+local_path_override(
+    module_name = "protobuf",
+    path = "third_party/protobuf",
+)
+
+local_path_override(
+    module_name = "mediapipe",
+    path = "third_party/mediapipe",
+)

@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/build/cmake_install.cmake",
+		"/Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/build/tests/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -1,0 +1,4 @@
+module(
+    name = "org_opencv",
+    version = "4.12.0",
+)

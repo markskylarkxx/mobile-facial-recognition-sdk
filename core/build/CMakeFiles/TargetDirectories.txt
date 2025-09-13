@@ -1,0 +1,7 @@
+/Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/build/CMakeFiles/neptune_core.dir
+/Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/build/CMakeFiles/edit_cache.dir
+/Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/build/CMakeFiles/rebuild_cache.dir
+/Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/build/tests/CMakeFiles/face_detection_test.dir
+/Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/build/tests/CMakeFiles/real_time_detection_test.dir
+/Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/build/tests/CMakeFiles/edit_cache.dir
+/Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/build/tests/CMakeFiles/rebuild_cache.dir

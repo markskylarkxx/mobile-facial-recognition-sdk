@@ -1,0 +1,63 @@
+// {
+//     "configurations": [
+//         {
+//             "name": "Mac",
+//             "includePath": [
+//                 "${workspaceFolder}/core/include",
+//                 "${workspaceFolder}/third_party",
+//                  "/opt/homebrew/Cellar/opencv/4.12.0/include/opencv4",
+//                  "${workspaceFolder}/third_party/tensorflow",
+//                  "${workspaceFolder}/third_party/mediapipe",
+//                  "${workspaceFolder}/third_party/third_party/absl"
+
+
+
+//             ],
+//             "defines": [],
+//             "macFrameworkPath": [],
+//             "compilerPath": "/usr/bin/clang++",
+//             "cStandard": "c11",
+//             "cppStandard": "c++17",
+//             "intelliSenseMode": "macos-clang-x64"
+//         }
+//     ],
+//     "version": 4
+// }
+
+
+
+
+
+
+
+
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/core/include",
+                "${workspaceFolder}/third_party",
+                "/opt/homebrew/opt/opencv/include/opencv4",
+                "${workspaceFolder}/third_party/tensorflow",
+                "${workspaceFolder}/third_party/mediapipe",
+                "${workspaceFolder}/third_party/third_party/absl",
+                "${workspaceFolder}/**"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**",
+                    "/opt/homebrew/opt/opencv/include/opencv4"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "defines": [],
+            "macFrameworkPath": [],
+            "compilerPath": "/usr/bin/clang++",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-arm64"
+        }
+    ],
+    "version": 4
+}
