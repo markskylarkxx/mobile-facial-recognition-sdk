@@ -1,35 +1,3 @@
-// // File: core/include/neptune/MediaPipeFaceDetector.h
-// #pragma once
-
-// #include "neptune/Types.h"
-// #include <opencv2/opencv.hpp>
-// #include <vector>
-// #include <memory>
-
-// namespace neptune {
-
-// class MediaPipeFaceDetector {
-// public:
-//     MediaPipeFaceDetector();
-//     ~MediaPipeFaceDetector();
-    
-//     bool initialize();
-//     std::vector<FaceBox> detectFaces(const cv::Mat& image);
-    
-//     bool isInitialized() const { return initialized_; }
-    
-// private:
-//     bool initialized_ = false;
-//     // Implementation details...
-// };
-
-// } // namespace neptune
-
-
-
-
-
-///////////////............................. use this!
 #pragma once
 #include <vector>
 #include <opencv2/opencv.hpp>

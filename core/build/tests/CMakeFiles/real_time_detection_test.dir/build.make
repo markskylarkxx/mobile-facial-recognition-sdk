@@ -96,12 +96,12 @@ real_time_detection_test_EXTERNAL_OBJECTS =
 tests/real_time_detection_test: tests/CMakeFiles/real_time_detection_test.dir/real_time_detection_test.cpp.o
 tests/real_time_detection_test: tests/CMakeFiles/real_time_detection_test.dir/build.make
 tests/real_time_detection_test: libneptune_core.a
-tests/real_time_detection_test: /opt/homebrew/lib/libopencv_highgui.4.12.0.dylib
-tests/real_time_detection_test: /opt/homebrew/lib/libopencv_videoio.4.12.0.dylib
-tests/real_time_detection_test: /opt/homebrew/lib/libopencv_imgcodecs.4.12.0.dylib
-tests/real_time_detection_test: /opt/homebrew/lib/libopencv_imgproc.4.12.0.dylib
-tests/real_time_detection_test: /opt/homebrew/lib/libopencv_core.4.12.0.dylib
 tests/real_time_detection_test: /Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/lib/libtensorflowlite.dylib
+tests/real_time_detection_test: /Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/third_party/opencv/lib/libopencv_core.dylib
+tests/real_time_detection_test: /Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/third_party/opencv/lib/libopencv_imgproc.dylib
+tests/real_time_detection_test: /Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/third_party/opencv/lib/libopencv_highgui.dylib
+tests/real_time_detection_test: /Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/third_party/opencv/lib/libopencv_videoio.dylib
+tests/real_time_detection_test: /Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/third_party/opencv/lib/libopencv_imgcodecs.dylib
 tests/real_time_detection_test: tests/CMakeFiles/real_time_detection_test.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable real_time_detection_test"
 	cd /Users/kenechukwumark/NeptuneMfb/facial-recognition-sdk/core/build/tests && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/real_time_detection_test.dir/link.txt --verbose=$(VERBOSE)

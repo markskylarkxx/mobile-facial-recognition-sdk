@@ -1,4 +1,4 @@
-// File: core/tests/face_detection_test.cpp
+
 // File: core/tests/face_detection_test.cpp
 #include "neptune/FaceDetector.h"
 #include "neptune/EmotionRecognizer.h"
@@ -135,6 +135,9 @@ int main(int argc, char** argv) {
 
     std::cout << "Neptune SDK initialized successfully!\n";
 
+    // Set video mode based on input
+    liveness.setVideoMode(videoMode);
+
     // Decide mode
     if (!imagePath.empty() && !videoMode) {
         // IMAGE MODE
@@ -157,7 +160,6 @@ int main(int argc, char** argv) {
             cv::Rect r = clampRect(cv::Rect(f.x, f.y, f.width, f.height), image.size());
 
             // Use Process(frame, rect) when the LandmarkExtractor expects a full-image + rect
-            // If your implementation expects only the cropped face, adjust accordingly.
             auto landmarks2D = landmarkExtractor.Process(image, r);
 
             // The extractor returns absolute image coordinates (since we passed the full image + rect)
@@ -177,7 +179,7 @@ int main(int argc, char** argv) {
                 // For emotion/liveness we pass the cropped face ROI
                 cv::Mat faceROI = image(r).clone();
                 auto er = emo->predictEmotion(faceROI);
-                auto live = liveness.check(faces[i]);
+                auto live = liveness.check(faces[i]); // Will immediately return NOT_LIVE for static images
 
                 std::string infoText = emotionToString(er.emotion) + " | " + livenessToString(live);
                 cv::putText(displayImage, infoText, cv::Point(r.x, std::max(0, r.y - 15)),
@@ -188,6 +190,7 @@ int main(int argc, char** argv) {
         cv::imshow("Neptune Facial SDK - Image Test", displayImage);
         cv::waitKey(0);
     } else if (videoMode) {
+        
         // VIDEO MODE
         cv::VideoCapture cap(0);
         if (!cap.isOpened()) {
@@ -198,9 +201,13 @@ int main(int argc, char** argv) {
         std::cout << "Video capture started. Press ESC to exit.\n";
 
         cv::Mat frame;
+        int frameCounter = 0;
+        
         while (true) {
             cap >> frame;
             if (frame.empty()) break;
+
+            frameCounter++;
 
             auto start = std::chrono::high_resolution_clock::now();
             auto faces = detector->detectFaces(frame);
@@ -220,7 +227,7 @@ int main(int argc, char** argv) {
                     faces[i].landmarks.push_back(Point{p.x, p.y});
                 }
 
-                std::cout << "Face " << i+1
+                std::cout << "Frame " << frameCounter << " - Face " << i+1
                           << " | Box: (" << r.x << "," << r.y << "," << r.width << "," << r.height << ")"
                           << " | Landmarks: " << faces[i].landmarks.size() << "\n";
 
@@ -230,7 +237,7 @@ int main(int argc, char** argv) {
                 if (!faces[i].landmarks.empty()) {
                     cv::Mat faceROI = frame(r).clone();
                     auto er = emo->predictEmotion(faceROI);
-                    auto live = liveness.check(faces[i]);
+                    auto live = liveness.check(faces[i]); // Will use proper temporal tracking for video
 
                     std::string infoText = emotionToString(er.emotion) + " | " + livenessToString(live);
                     cv::putText(displayImage, infoText, cv::Point(r.x, std::max(0, r.y - 15)),
@@ -260,6 +267,11 @@ int main(int argc, char** argv) {
     std::cout << "Test completed successfully!\n";
     return 0;
 }
+
+
+
+
+
 
 
 

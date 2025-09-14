@@ -11,13 +11,6 @@ namespace neptune {
 const std::vector<std::string> EMOTION_LABELS = {
     "Anger", "Disgust", "Fear", "Happiness", "Sadness", "Surprise", "Neutral"
 };
-
-// The seven emotion classes from your MobileNet model
-// const std::vector<std::string> EMOTION_LABELS = {
-//     "Happy", "Sad", "Surprised", "Fearful", "Angry", "Disgusted", "Neutral"
-// };
-
-
 EmotionRecognizer::EmotionRecognizer(const NeptuneConfig& config)
     : inputWidth_(0), inputHeight_(0), minConfidence_(config.minEmotionConfidence) {}
 
@@ -175,19 +168,6 @@ EmotionResult EmotionRecognizer::predictEmotion(const cv::Mat& faceImage) {
     return result;
 }
 } // namespace neptune
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

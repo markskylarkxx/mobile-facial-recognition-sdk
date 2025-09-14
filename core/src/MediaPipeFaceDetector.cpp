@@ -1,5 +1,4 @@
 
-//use this!
 #include "neptune/MediaPipeFaceDetector.h"
 #include <cmath>
 #include <algorithm>

@@ -1,4 +1,4 @@
-//...................................................................
+
 #include "neptune/LivenessChecker.h"
 #include "neptune/MediaPipeLandmarks.h"
 #include "neptune/Log.h"
@@ -12,8 +12,32 @@ LivenessChecker::LivenessChecker(const NeptuneConfig& config)
       blinkFrameCount_(0),
       lastYaw_(0.0f),
       lastPitch_(0.0f),
-      isInitialized_(false),  // Add initialization flag
-      frameCount_(0) {}       // Add frame counter
+      isInitialized_(false),
+      frameCount_(0),
+      isVideoMode_(false) {}  // Initialize isVideoMode_
+
+void LivenessChecker::setVideoMode(bool enabled) {
+    isVideoMode_ = enabled;
+    Log::info("LivenessChecker", "Video mode set to: " + std::string(enabled ? "true" : "false"));
+    
+    // Reset state when mode changes
+    if (!enabled) {
+        resetForNewFrame();
+    }
+}
+
+void LivenessChecker::resetForNewFrame() {
+    // Reset frame-specific state
+    frameCount_ = 0;
+    isInitialized_ = false;
+    earHistory_.clear();
+    blinkFrameCount_ = 0;
+    lastHeadMoveTime_ = std::chrono::steady_clock::now();
+    lastYaw_ = 0.0f;
+    lastPitch_ = 0.0f;
+    
+    Log::debug("LivenessChecker", "Reset for new frame/image");
+}
 
 float LivenessChecker::computeEAR(const std::vector<Point>& eyeLandmarks) {
     // MediaPipe eye landmarks: 6 points per eye in this order:
@@ -21,14 +45,12 @@ float LivenessChecker::computeEAR(const std::vector<Point>& eyeLandmarks) {
     
     if (eyeLandmarks.size() != 6) {
         Log::warn("LivenessChecker", "Invalid eye landmarks count: " + std::to_string(eyeLandmarks.size()));
-        return -1.0f; // Return invalid value instead of assuming open eyes
+        return -1.0f;
     }
 
     try {
         // Calculate EAR using the 6-point formula
         // EAR = (|P2-P6| + |P3-P5|) / (2 * |P1-P4|)
-        // Where P1-P6 are the 6 eye landmarks
-        
         float vertical1 = std::sqrt(std::pow(eyeLandmarks[1].x - eyeLandmarks[5].x, 2) + 
                                    std::pow(eyeLandmarks[1].y - eyeLandmarks[5].y, 2));
         float vertical2 = std::sqrt(std::pow(eyeLandmarks[2].x - eyeLandmarks[4].x, 2) + 
@@ -38,17 +60,15 @@ float LivenessChecker::computeEAR(const std::vector<Point>& eyeLandmarks) {
         
         if (horizontal < 1e-6f) {
             Log::warn("LivenessChecker", "Horizontal eye distance too small for EAR calculation");
-            return -1.0f; // Return invalid value
+            return -1.0f;
         }
         
         float ear = (vertical1 + vertical2) / (2.0f * horizontal);
-        
-        // Clamp EAR to reasonable range
         return std::max(0.0f, std::min(1.0f, ear));
         
     } catch (const std::exception& e) {
         Log::error("LivenessChecker", "EAR calculation error: " + std::string(e.what()));
-        return -1.0f; // Return invalid value
+        return -1.0f;
     }
 }
 
@@ -60,13 +80,9 @@ float LivenessChecker::estimateHeadYaw(const std::vector<Point>& landmarks) {
 
     try {
         // Get nose tip
-        const Point& noseTip = landmarks[1]; // MediaPipe nose tip index
+        const Point& noseTip = landmarks[1];
         
-        // Calculate eye centers from MediaPipe eye landmarks
-        // Left eye landmarks (from viewer's perspective): 362, 382, 381, 380, 374, 373
-        // Right eye landmarks: 33, 7, 163, 144, 145, 153
-        
-        // Left eye center (viewer's left, person's right)
+        // Left eye center
         Point leftEyeCenter = {0.0f, 0.0f};
         std::vector<int> leftEyeIndices = {362, 382, 381, 380, 374, 373};
         for (int idx : leftEyeIndices) {
@@ -76,7 +92,7 @@ float LivenessChecker::estimateHeadYaw(const std::vector<Point>& landmarks) {
         leftEyeCenter.x /= leftEyeIndices.size();
         leftEyeCenter.y /= leftEyeIndices.size();
         
-        // Right eye center (viewer's right, person's left)
+        // Right eye center
         Point rightEyeCenter = {0.0f, 0.0f};
         std::vector<int> rightEyeIndices = {33, 7, 163, 144, 145, 153};
         for (int idx : rightEyeIndices) {
@@ -91,8 +107,6 @@ float LivenessChecker::estimateHeadYaw(const std::vector<Point>& landmarks) {
         
         // Calculate face center between eyes
         float eyesCenterX = (leftEyeCenter.x + rightEyeCenter.x) / 2.0f;
-        
-        // Calculate yaw based on nose position relative to eye center
         float eyesDistance = std::abs(rightEyeCenter.x - leftEyeCenter.x);
         
         if (eyesDistance < 1e-3f) {
@@ -103,7 +117,6 @@ float LivenessChecker::estimateHeadYaw(const std::vector<Point>& landmarks) {
         float delta = noseTip.x - eyesCenterX;
         float normalizedYaw = delta / eyesDistance;
         
-        // Clamp to reasonable range (-1 to 1, roughly -45 to +45 degrees)
         return std::max(-1.0f, std::min(1.0f, normalizedYaw));
         
     } catch (const std::exception& e) {
@@ -119,35 +132,28 @@ float LivenessChecker::estimateHeadPitch(const std::vector<Point>& landmarks) {
     }
 
     try {
-        // Use proper MediaPipe landmark indices for better pitch estimation
-        const int NOSE_TIP = 1;      // Nose tip
-        const int FOREHEAD = 10;     // Forehead point
-        const int CHIN = 175;        // Chin point
+        const int NOSE_TIP = 1;
+        const int FOREHEAD = 10;
+        const int CHIN = 175;
         
         const Point& noseTip = landmarks[NOSE_TIP];
         const Point& forehead = landmarks[FOREHEAD];
         const Point& chin = landmarks[CHIN];
         
-        // DEBUG: Print landmarks being used
         Log::debug("LivenessChecker", "Pitch landmarks:");
         Log::debug("LivenessChecker", "  Nose [1]: (" + std::to_string(noseTip.x) + ", " + std::to_string(noseTip.y) + ")");
         Log::debug("LivenessChecker", "  Forehead [10]: (" + std::to_string(forehead.x) + ", " + std::to_string(forehead.y) + ")");
         Log::debug("LivenessChecker", "  Chin [175]: (" + std::to_string(chin.x) + ", " + std::to_string(chin.y) + ")");
         
-        // Calculate face height
         float faceHeight = std::abs(chin.y - forehead.y);
         if (faceHeight < 1e-3f) {
             Log::warn("LivenessChecker", "Face height too small for pitch calculation: " + std::to_string(faceHeight));
             return 0.0f;
         }
         
-        // Calculate face center Y
         float faceCenterY = (forehead.y + chin.y) / 2.0f;
-        
-        // Normalize pitch estimate
         float normalizedPitch = (noseTip.y - faceCenterY) / faceHeight;
         
-        // Clamp to reasonable range (-1 to 1)
         return std::max(-1.0f, std::min(1.0f, normalizedPitch));
         
     } catch (const std::exception& e) {
@@ -157,30 +163,25 @@ float LivenessChecker::estimateHeadPitch(const std::vector<Point>& landmarks) {
 }
 
 bool LivenessChecker::detectBlink(float currentEAR) {
-    // Skip if EAR is invalid
     if (currentEAR < 0.0f) {
         Log::warn("LivenessChecker", "Invalid EAR value, skipping blink detection");
         return false;
     }
     
-    // Store current EAR in history
     earHistory_.push_back(currentEAR);
-    if (earHistory_.size() > 10) { // Keep last 10 frames
+    if (earHistory_.size() > 10) {
         earHistory_.pop_front();
     }
     
-    // Log EAR for debugging
     Log::debug("LivenessChecker", "Current EAR: " + std::to_string(currentEAR) + 
                ", Threshold: " + std::to_string(config_.earClosedThreshold) +
                ", Blink frames: " + std::to_string(blinkFrameCount_));
     
-    // Check if current EAR indicates eye closure
     if (currentEAR < config_.earClosedThreshold) {
         blinkFrameCount_++;
         Log::debug("LivenessChecker", "Eyes closed, frame count: " + std::to_string(blinkFrameCount_));
-        return false; // Eye is closed, but not yet a complete blink
+        return false;
     } else {
-        // If eyes were closed for sufficient frames and now open, it's a blink
         if (blinkFrameCount_ >= config_.blinkMinFrames) {
             Log::info("LivenessChecker", "Blink detected! Closed for " + std::to_string(blinkFrameCount_) + " frames");
             blinkFrameCount_ = 0;
@@ -192,21 +193,18 @@ bool LivenessChecker::detectBlink(float currentEAR) {
 }
 
 bool LivenessChecker::detectHeadMovement(float currentYaw, float currentPitch) {
-    // For the first frame, just initialize values
     if (!isInitialized_) {
         lastYaw_ = currentYaw;
         lastPitch_ = currentPitch;
         isInitialized_ = true;
         Log::info("LivenessChecker", "Initialized head pose tracking - Yaw: " + std::to_string(currentYaw) + 
                  ", Pitch: " + std::to_string(currentPitch));
-        return false; // No movement on first frame
+        return false;
     }
     
     float yawChange = std::abs(currentYaw - lastYaw_);
     float pitchChange = std::abs(currentPitch - lastPitch_);
     
-    // Convert to approximate degrees (empirical scaling)
-    // Assuming normalized values (-1 to 1) correspond to roughly -45 to +45 degrees
     float yawDegrees = yawChange * 45.0f;
     float pitchDegrees = pitchChange * 45.0f;
     
@@ -224,9 +222,19 @@ bool LivenessChecker::detectHeadMovement(float currentYaw, float currentPitch) {
     
     return movementDetected;
 }
+
 LivenessResult LivenessChecker::check(const FaceBox& face) {
     LivenessResult result;
-    frameCount_++; // Increment frame counter
+    frameCount_++;
+    
+    // EARLY EXIT: For static images, always return NOT_LIVE without processing
+    if (!isVideoMode_) {
+        result.status = LivenessStatus::NOT_LIVE;
+        result.confidence = 0.95f;
+        result.reason = "Static image - no temporal data available";
+        Log::info("LivenessChecker", "Static image detected - marked as NOT_LIVE");
+        return result;
+    }
     
     if (face.landmarks.empty()) {
         result.status = LivenessStatus::UNKNOWN;
@@ -244,15 +252,13 @@ LivenessResult LivenessChecker::check(const FaceBox& face) {
     }
 
     try {
-        // Extract eyes using MediaPipe indices directly
-        // Left eye (viewer's perspective): 362, 382, 381, 380, 374, 373
+        // Extract eyes
         std::vector<Point> leftEye;
         std::vector<int> leftEyeIndices = {362, 382, 381, 380, 374, 373};
         for (int idx : leftEyeIndices) {
             leftEye.push_back(face.landmarks[idx]);
         }
         
-        // Right eye (viewer's perspective): 33, 7, 163, 144, 145, 153  
         std::vector<Point> rightEye;
         std::vector<int> rightEyeIndices = {33, 7, 163, 144, 145, 153};
         for (int idx : rightEyeIndices) {
@@ -270,7 +276,6 @@ LivenessResult LivenessChecker::check(const FaceBox& face) {
         float leftEAR = computeEAR(leftEye);
         float rightEAR = computeEAR(rightEye);
         
-        // Handle invalid EAR values
         if (leftEAR < 0.0f || rightEAR < 0.0f) {
             result.status = LivenessStatus::UNKNOWN;
             result.confidence = 0.0f;
@@ -279,7 +284,6 @@ LivenessResult LivenessChecker::check(const FaceBox& face) {
         }
         
         float avgEAR = (leftEAR + rightEAR) / 2.0f;
-        
         Log::debug("LivenessChecker", "EAR: L=" + std::to_string(leftEAR) + 
                   " R=" + std::to_string(rightEAR) + " Avg=" + std::to_string(avgEAR));
         
@@ -288,27 +292,20 @@ LivenessResult LivenessChecker::check(const FaceBox& face) {
         // 2. Head pose detection
         float currentYaw = estimateHeadYaw(face.landmarks);
         float currentPitch = estimateHeadPitch(face.landmarks);
-        
         Log::debug("LivenessChecker", "Head pose: Yaw=" + std::to_string(currentYaw) + 
                   " Pitch=" + std::to_string(currentPitch));
         
         bool headMovementDetected = detectHeadMovement(currentYaw, currentPitch);
         
-        // 3. Decision logic - FIXED to properly handle static images
+        // 3. Decision logic - For video mode only
         auto now = std::chrono::steady_clock::now();
         double msSinceLastMove = std::chrono::duration_cast<std::chrono::milliseconds>(
             now - lastHeadMoveTime_).count();
-        
+
         Log::debug("LivenessChecker", "Time since last move: " + std::to_string(msSinceLastMove) + 
                   "ms, Frame count: " + std::to_string(frameCount_));
-        
-        // CRITICAL FIX: For static images (single frame), always return NOT_LIVE
-        if (frameCount_ == 1) {
-            result.status = LivenessStatus::NOT_LIVE;
-            result.confidence = 0.90f;
-            result.reason = "Static image - no temporal data available";
-            Log::info("LivenessChecker", "Static image detected - marked as NOT_LIVE");
-        } else if (blinkDetected) {
+
+        if (blinkDetected) {
             result.status = LivenessStatus::LIVE;
             result.confidence = 0.95f;
             result.reason = "Blink detected";
@@ -319,12 +316,10 @@ LivenessResult LivenessChecker::check(const FaceBox& face) {
             result.reason = "Head movement detected";
             Log::info("LivenessChecker", "Head movement detected!");
         } else if (msSinceLastMove < config_.livenessWindowMs && isInitialized_) {
-            // Recent movement still within liveness window (but only if we've been tracking)
             result.status = LivenessStatus::LIVE;
             result.confidence = 0.75f;
             result.reason = "Recent movement within window";
         } else {
-            // No recent movement detected
             result.status = LivenessStatus::NOT_LIVE;
             result.confidence = 0.80f;
             result.reason = "No liveness cues detected (no movement for " + 
@@ -344,5 +339,3 @@ LivenessResult LivenessChecker::check(const FaceBox& face) {
     
     return result;
 }
-
-

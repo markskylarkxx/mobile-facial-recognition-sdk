@@ -1,7 +1,4 @@
 
-
-//.............................................................................
-
 // File: core/include/neptune/LivenessChecker.h
 #pragma once
 
@@ -23,6 +20,9 @@ public:
     void setVideoMode(bool enabled);
     //added!
     void reset(); // Reset all tracking state
+    
+    
+    void resetForNewFrame();
 
 private:
     NeptuneConfig config_;

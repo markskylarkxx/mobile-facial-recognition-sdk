@@ -27,7 +27,7 @@ std::unique_ptr<NeptuneSDK> NeptuneSDK::create(const NeptuneConfig& config) {
 bool NeptuneSDK::init() {
     faceDetector_ = FaceDetector::create(config_.faceDetectionModelPath, config_);
     emotionRecognizer_ = EmotionRecognizer::create(config_.emotionModelPath, config_);
-    livenessChecker_ = std::make_unique<LivenessChecker>(config_); // no model yet, blink-based
+    livenessChecker_ = std::make_unique<LivenessChecker>(config_);
     
     return faceDetector_ && emotionRecognizer_;
 
