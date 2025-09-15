@@ -83,10 +83,10 @@ int main(int argc, char** argv) {
     config.emotionModelPath = emotionModelPath;
     config.faceDetectorBackend = FaceDetectorBackend::MEDIAPIPE;
     config.earClosedThreshold = 0.25f;
-    config.blinkMinFrames = 1;
-    config.headYawChangeMinDeg = 5.0f;
-    config.headPitchChangeMinDeg = 3.0f;
-    config.livenessWindowMs = 1500.0;
+    config.blinkMinFrames = 2;
+    config.headYawChangeMinDeg = 20.0f;
+    config.headPitchChangeMinDeg = 15.0f;
+    config.livenessWindowMs = 3000.0;
 
     bool showFps = false;
     bool debugMode = false;
@@ -272,10 +272,15 @@ int main(int argc, char** argv) {
 
 
 
+// Head movement detection is too sensitive - It's detecting noise as head movements
+// Blink detection isn't working - It's not detecting your actual blinks
+// Liveness is being confirmed without actual proof - It should require both blinks AND head movements
 
 
 
-
+// EAR is huge (~1.5–1.8) instead of ~0.2..0.3 → your computeEAR() is being fed the eye landmarks in the wrong order (so the horizontal / vertical pairs are incorrect), which makes the ratio large and breaks blink detection.
+// Head-movement counter keeps rising even when the user is still → pose jitter/noise is being treated as instantaneous movement every frame (no warm-up baseline, no smoothing, no minimum interval).
+// Blink count stays zero and the system reports LIVE prematurely → because EAR was wrong + liveness logic marks proven too easily when the above counters are noisy.
 
 
 
