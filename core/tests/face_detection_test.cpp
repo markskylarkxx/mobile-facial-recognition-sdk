@@ -293,6 +293,11 @@ int main(int argc, char** argv) {
 // ./tests/face_detection_test --image ../tests/assets/angry.jpg
 
 
+//to see how the sdk is organised, run: 
+// tree -I 'build|bin|.vscode' --dirsfirst
+
+
+
 //bazel build -c opt --define MEDIAPIPE_DISABLE_GPU=1 \
   //mediapipe/examples/desktop/face_mesh:face_mesh_cpu --verbose_failures
 
@@ -304,3 +309,11 @@ int main(int argc, char** argv) {
 //   Extract 468 3D facial landmarks (Face Mesh) per detected face.
 //   Optionally, you can feed it into downstream calculators like emotion recognition, liveness detection, or gesture detection, depending on the graph you load (pbtxt).
 //   So, this executable is a runtime for your MediaPipe graph. You pass a .pbtxt calculator graph file and input images/video.
+
+
+
+
+
+//   -sh * | sort -h
+
+//du -sh third_party/* | sort -h

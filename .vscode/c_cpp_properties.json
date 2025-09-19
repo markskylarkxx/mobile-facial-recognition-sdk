@@ -60,13 +60,15 @@
                 "${workspaceFolder}/third_party/opencv",
                 "/opt/homebrew/opt/opencv/include/opencv4",
                 "${workspaceFolder}/third_party/tensorflow",
+                "${workspaceFolder}/include/tensorflow",
                 "${workspaceFolder}/third_party/mediapipe",
                 "${workspaceFolder}/third_party/third_party/absl",
                 "${workspaceFolder}/**"
             ],
             "browse": {
                 "path": [
-                    "${workspaceFolder}/**"
+                    "${workspaceFolder}/**",
+                   // "/opt/homebrew/opt/opencv/include/opencv4"
                 ],
                 "limitSymbolsToIncludedHeaders": true
             },
