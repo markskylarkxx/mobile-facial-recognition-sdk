@@ -100,3 +100,8 @@ CMakeLists.txt
 
 This is a critical file that tells CMake how to build the entire project, including the core library and any platform-specific C++ components.
 
+
+
+
+run with this command inside the build folder:
+./tests/face_detection_test --video

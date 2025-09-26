@@ -15,7 +15,7 @@ using namespace neptune;
 
 // ------------------------ Helper Functions ------------------------
 static std::string emotionToString(Emotion e) {
-    switch (e) {
+    switch (e) { 
         case Emotion::ANGER: return "ANGER";
         case Emotion::DISGUST: return "DISGUST";
         case Emotion::FEAR: return "FEAR";
@@ -295,6 +295,18 @@ int main(int argc, char** argv) {
 
 //to see how the sdk is organised, run: 
 // tree -I 'build|bin|.vscode' --dirsfirst
+
+
+
+//create and activate a virtual environment:
+
+//python3 -m venv venv
+//source venv/bin/activate
+
+//Reinstall pybind11 inside this venv
+
+//pip install --upgrade pip
+//pip install pybind11
 
 
 

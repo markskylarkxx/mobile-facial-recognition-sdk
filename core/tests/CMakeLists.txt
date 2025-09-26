@@ -25,6 +25,11 @@ target_link_libraries(real_time_detection_test neptune_core ${OpenCV_LIBS})
      # This should link all components found by find_package
 
 
+     add_executable(main_webrtc  main_webrtc.cpp )
+target_link_libraries(main_webrtc neptune_core ${OpenCV_LIBS})
+
+
+
 
 
 # mkdir build && cd build
